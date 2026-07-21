@@ -62,18 +62,3 @@ jobs:
       with:
         name: zhelongling-apk
         path: android/app/build/outputs/apk/release/*.apk
-
-    - name: Create Release
-      uses: softprops/action-gh-release@v2
-      if: github.ref == 'refs/heads/main'
-      with:
-        files: android/app/build/outputs/apk/release/*.apk
-        tag_name: v${{ github.run_number }}
-        name: 龙头岭交易终端 v${{ github.run_number }}
-        body: |
-          龙头岭交易终端 Android APK
-          - 龙头抓取策略
-          - 实时A股数据连接
-          - 自动止盈止损
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
