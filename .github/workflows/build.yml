@@ -1,4 +1,4 @@
-name: Build Android APK
+﻿name: Build Android APK
 
 on:
   push:
@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
 
     - name: Setup Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
 
@@ -21,13 +21,13 @@ jobs:
       run: npm install
 
     - name: Setup Java
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
 
     - name: Setup Android SDK
-      uses: android-actions/setup-android@v2
+      uses: android-actions/setup-android@v3
 
     - name: Build Web Assets
       run: |
@@ -58,21 +58,21 @@ jobs:
         BUILD_TOOLS_VERSION: "34.0.0"
 
     - name: Upload APK
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: zhelongling-apk
         path: android/app/build/outputs/apk/release/*.apk
 
     - name: Create Release
-      uses: softprops/action-gh-release@v1
+      uses: softprops/action-gh-release@v2
       if: github.ref == 'refs/heads/main'
       with:
         files: android/app/build/outputs/apk/release/*.apk
         tag_name: v${{ github.run_number }}
-        name: 蛰龙令 v${{ github.run_number }}
+        name: 龙头岭交易终端 v${{ github.run_number }}
         body: |
-          蛰龙令交易终端 Android APK
-          - 龙头狙击策略
+          龙头岭交易终端 Android APK
+          - 龙头抓取策略
           - 实时A股数据连接
           - 自动止盈止损
       env:
