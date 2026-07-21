@@ -1,0 +1,1368 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0e1a">
+<meta name="description" content="蛰龙令 - 龙头狙击交易终端">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect fill='%230a0e1a' width='100' height='100' rx='20'/%3E%3Ctext x='50' y='65' font-size='50' text-anchor='middle' fill='%23f59e0b'%3E🐉%3C/text%3E%3C/svg%3E">
+<title>蛰龙令 · 龙头狙击</title>
+<style>
+:root {
+  --bg: #0a0e1a; --bg2: #111827; --bg3: #1a2235;
+  --border: #1e293b; --border2: #334155;
+  --text: #e2e8f0; --text2: #94a3b8; --text3: #64748b;
+  --green: #22c55e; --green2: #16a34a; --green-bg: rgba(34,197,94,0.1);
+  --red: #ef4444; --red2: #dc2626; --red-bg: rgba(239,68,68,0.1);
+  --yellow: #f59e0b; --yellow-bg: rgba(245,158,11,0.1);
+  --blue: #3b82f6; --blue-bg: rgba(59,130,246,0.1);
+  --purple: #a855f7;
+  --font-mono: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+html, body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; overflow-x: hidden; }
+body { padding: 0 0 30px; }
+
+/* Header */
+.header { position: sticky; top: 0; z-index: 100; background: rgba(10,14,26,0.95); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+.header-brand { display: flex; align-items: center; gap: 10px; }
+.header-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--yellow), var(--red)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+.header-title { font-size: 18px; font-weight: 800; letter-spacing: 2px; background: linear-gradient(135deg, var(--yellow), var(--red)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header-sub { font-size: 10px; color: var(--text3); margin-top: 1px; }
+.status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; border: 1px solid; transition: all 0.3s; }
+.status-empty { background: var(--yellow-bg); color: var(--yellow); border-color: rgba(245,158,11,0.3); }
+.status-hold { background: var(--green-bg); color: var(--green); border-color: rgba(34,197,94,0.3); animation: pulse 2s infinite; }
+.status-cooldown { background: var(--red-bg); color: var(--red); border-color: rgba(239,68,68,0.3); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
+
+/* Cards */
+.card { background: var(--bg2); border: 1px solid var(--border); border-radius: 14px; margin: 12px 16px; overflow: hidden; transition: border-color 0.3s; }
+.card:hover { border-color: var(--border2); }
+.card-header { padding: 14px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--text2); }
+.card-header svg { flex-shrink: 0; }
+.card-body { padding: 14px 16px; }
+
+/* Capital Grid */
+.capital-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+.capital-item { text-align: center; padding: 10px; background: var(--bg); border-radius: 10px; border: 1px solid var(--border); }
+.capital-label { font-size: 11px; color: var(--text3); margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px; }
+.capital-value { font-size: 22px; font-weight: 700; font-family: var(--font-mono); transition: color 0.3s; }
+.capital-value.up { color: var(--green); }
+.capital-value.down { color: var(--red); }
+.capital-delta { font-size: 11px; margin-top: 3px; font-weight: 600; }
+.capital-delta.up { color: var(--green); }
+.capital-delta.down { color: var(--red); }
+
+/* Market */
+.market-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.market-item { background: var(--bg); border-radius: 10px; padding: 14px; text-align: center; border: 1px solid var(--border); }
+.market-name { font-size: 11px; color: var(--text3); margin-bottom: 6px; display: flex; align-items: center; justify-content: center; gap: 4px; }
+.market-price { font-size: 26px; font-weight: 700; font-family: var(--font-mono); transition: all 0.3s; }
+.market-price.up { color: var(--green); }
+.market-price.down { color: var(--red); }
+.market-delta { font-size: 13px; margin-top: 4px; font-weight: 600; }
+.market-delta.up { color: var(--green); }
+.market-delta.down { color: var(--red); }
+
+.ma-bar { margin-top: 14px; padding: 0 4px; }
+.ma-track { height: 8px; background: var(--bg); border-radius: 4px; position: relative; overflow: hidden; }
+.ma-fill { height: 100%; border-radius: 4px; transition: width 0.8s ease, background 0.5s; }
+.ma-fill.up { background: linear-gradient(90deg, var(--green), #4ade80); }
+.ma-fill.down { background: linear-gradient(90deg, var(--red), #f87171); }
+.ma-info { display: flex; justify-content: space-between; font-size: 11px; color: var(--text3); margin-top: 6px; padding: 0 2px; }
+.ma-status { font-weight: 700; }
+.ma-status.up { color: var(--green); }
+.ma-status.down { color: var(--red); }
+
+/* Signal */
+.signal-box { padding: 16px; border-radius: 10px; text-align: center; margin-bottom: 14px; transition: all 0.3s; }
+.signal-box.buy { background: var(--green-bg); border: 1px solid rgba(34,197,94,0.3); }
+.signal-box.sell { background: var(--red-bg); border: 1px solid rgba(239,68,68,0.3); }
+.signal-box.wait { background: rgba(148,163,184,0.08); border: 1px solid var(--border); }
+.signal-box.cooldown { background: var(--red-bg); border: 1px solid rgba(239,68,68,0.3); }
+.signal-title { font-size: 16px; font-weight: 800; margin-bottom: 8px; }
+.signal-text { font-size: 12px; color: var(--text2); line-height: 1.7; }
+
+/* Checklist */
+.checklist { display: flex; flex-direction: column; gap: 8px; }
+.check-item { display: flex; align-items: center; gap: 10px; padding: 10px 12px; background: var(--bg); border-radius: 8px; font-size: 12px; transition: all 0.2s; }
+.check-item:hover { background: var(--bg3); }
+.check-icon { width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; transition: all 0.3s; }
+.check-pass { background: var(--green-bg); color: var(--green); }
+.check-fail { background: var(--red-bg); color: var(--red); }
+.check-warn { background: var(--yellow-bg); color: var(--yellow); }
+.check-text { flex: 1; }
+.check-detail { font-size: 10px; color: var(--text3); margin-top: 2px; }
+
+/* Sectors */
+.sector-list { max-height: 320px; overflow-y: auto; }
+.sector-item { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); transition: all 0.2s; }
+.sector-item:last-child { border-bottom: none; }
+.sector-item:hover { background: rgba(255,255,255,0.02); margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+.sector-info { flex: 1; min-width: 0; }
+.sector-name { font-size: 14px; font-weight: 700; }
+.sector-stocks { font-size: 10px; color: var(--text3); margin-top: 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.sector-count { font-size: 12px; color: var(--text2); margin-right: 10px; font-family: var(--font-mono); font-weight: 600; }
+.sector-grade { padding: 3px 10px; border-radius: 5px; font-size: 11px; font-weight: 800; flex-shrink: 0; }
+.grade-s { background: var(--red-bg); color: var(--red); }
+.grade-a { background: var(--yellow-bg); color: var(--yellow); }
+.grade-none { background: var(--bg); color: var(--text3); border: 1px solid var(--border); }
+
+/* Positions */
+.position-empty { text-align: center; padding: 30px 20px; color: var(--text3); font-size: 13px; line-height: 1.8; }
+.position-item { padding: 14px; background: var(--bg); border-radius: 10px; margin-bottom: 10px; border: 1px solid var(--border); transition: all 0.3s; }
+.position-item:hover { border-color: var(--border2); }
+.position-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.position-code { font-size: 14px; font-weight: 800; font-family: var(--font-mono); color: var(--text); }
+.position-name { font-size: 12px; color: var(--text3); margin-left: 6px; }
+.position-pnl { font-size: 16px; font-weight: 700; font-family: var(--font-mono); }
+.position-pnl.up { color: var(--green); }
+.position-pnl.down { color: var(--red); }
+.position-detail { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; font-size: 11px; color: var(--text3); margin-bottom: 10px; }
+.position-detail strong { color: var(--text); font-weight: 600; }
+.position-bar { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; margin-bottom: 8px; }
+.position-bar-fill { height: 100%; border-radius: 3px; transition: width 0.5s ease; }
+.position-bar-fill.up { background: var(--green); }
+.position-bar-fill.down { background: var(--red); }
+.position-stop { font-size: 11px; display: flex; gap: 14px; flex-wrap: wrap; color: var(--text3); }
+.stop-line { color: var(--red); font-weight: 700; }
+.trail-line { color: var(--green); font-weight: 700; }
+.position-alert { font-size: 12px; margin-top: 8px; padding: 8px 12px; border-radius: 6px; font-weight: 700; animation: pulse 2s infinite; }
+.alert-stop { background: var(--red-bg); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.alert-trail { background: var(--yellow-bg); color: var(--yellow); border: 1px solid rgba(245,158,11,0.3); }
+.alert-hold { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(59,130,246,0.3); }
+
+/* Trade Log */
+.log-list { max-height: 280px; overflow-y: auto; }
+.log-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 12px; transition: all 0.2s; }
+.log-item:last-child { border-bottom: none; }
+.log-item:hover { background: rgba(255,255,255,0.02); }
+.log-date { color: var(--text3); font-family: var(--font-mono); width: 50px; flex-shrink: 0; font-size: 11px; }
+.log-action { padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: 700; width: 38px; text-align: center; flex-shrink: 0; }
+.log-action.buy { background: var(--green-bg); color: var(--green); }
+.log-action.sell { background: var(--red-bg); color: var(--red); }
+.log-stock { font-weight: 700; width: 85px; flex-shrink: 0; font-size: 12px; }
+.log-reason { color: var(--text2); flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
+.log-pnl { font-family: var(--font-mono); font-weight: 700; width: 60px; text-align: right; flex-shrink: 0; font-size: 12px; }
+.log-pnl.up { color: var(--green); }
+.log-pnl.down { color: var(--red); }
+
+/* Buttons */
+.btn-group { display: flex; gap: 10px; padding: 0 16px 14px; }
+.btn { flex: 1; padding: 12px; border-radius: 10px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; text-align: center; display: flex; align-items: center; justify-content: center; gap: 6px; }
+.btn:hover { background: var(--bg3); border-color: var(--border2); }
+.btn:active { transform: scale(0.97); }
+.btn-primary { background: var(--green); color: #000; border-color: var(--green); }
+.btn-primary:hover { background: var(--green2); }
+.btn-danger { background: var(--red); color: #fff; border-color: var(--red); }
+.btn-danger:hover { background: var(--red2); }
+.btn-warn { background: var(--yellow); color: #000; border-color: var(--yellow); }
+.btn-warn:hover { opacity: 0.9; }
+.btn-blue { background: var(--blue); color: #fff; border-color: var(--blue); }
+
+/* Form */
+.form-group { margin-bottom: 14px; }
+.form-label { font-size: 12px; color: var(--text2); margin-bottom: 5px; display: block; font-weight: 600; }
+.form-input { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 14px; font-family: var(--font-mono); transition: all 0.2s; }
+.form-input:focus { outline: none; border-color: var(--blue); box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+.form-select { width: 100%; padding: 12px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; color: var(--text); font-size: 14px; transition: all 0.2s; }
+.form-select:focus { outline: none; border-color: var(--blue); }
+
+/* Modal */
+.modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.75); z-index: 200; display: none; align-items: flex-end; justify-content: center; padding: 0; backdrop-filter: blur(4px); }
+.modal-overlay.active { display: flex; }
+.modal { background: var(--bg2); border: 1px solid var(--border); border-radius: 20px 20px 0 0; width: 100%; max-width: 480px; max-height: 85vh; overflow-y: auto; animation: slideUp 0.3s ease; }
+@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+.modal-header { padding: 18px 20px; border-bottom: 1px solid var(--border); font-size: 16px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+.modal-close { font-size: 24px; color: var(--text3); cursor: pointer; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: all 0.2s; }
+.modal-close:hover { background: var(--bg3); color: var(--text); }
+.modal-body { padding: 20px; }
+
+/* Cooldown */
+.cooldown-box { text-align: center; padding: 30px 20px; }
+.cooldown-timer { font-size: 42px; font-weight: 800; font-family: var(--font-mono); color: var(--red); }
+.cooldown-label { font-size: 12px; color: var(--text3); margin-top: 8px; }
+
+/* Toast */
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--bg2); border: 1px solid var(--border); padding: 14px 24px; border-radius: 12px; font-size: 13px; font-weight: 600; z-index: 300; transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 10px 40px rgba(0,0,0,0.5); max-width: 90%; text-align: center; }
+.toast.show { transform: translateX(-50%) translateY(0); }
+.toast.success { border-color: rgba(34,197,94,0.3); color: var(--green); }
+.toast.error { border-color: rgba(239,68,68,0.3); color: var(--red); }
+.toast.warn { border-color: rgba(245,158,11,0.3); color: var(--yellow); }
+
+/* Scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+/* Loading */
+.loading { text-align: center; padding: 24px; color: var(--text3); font-size: 13px; }
+.spinner { display: inline-block; width: 20px; height: 20px; border: 2px solid var(--border); border-top-color: var(--yellow); border-radius: 50%; animation: spin 1s linear infinite; margin-right: 8px; vertical-align: middle; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Rules */
+.rule-item { padding: 12px 0; border-bottom: 1px solid var(--border); font-size: 13px; line-height: 1.8; }
+.rule-item:last-child { border-bottom: none; }
+.rule-title { font-weight: 700; color: var(--text); margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+.rule-desc { color: var(--text2); padding-left: 22px; }
+
+/* Data source badge */
+.data-source { display: flex; align-items: center; gap: 6px; font-size: 10px; color: var(--text3); margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border); }
+.data-source .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+.data-source .dot.offline { background: var(--red); animation: none; }
+
+/* Real-time price update flash */
+@keyframes flashGreen { 0% { color: var(--green); } 100% { color: inherit; } }
+@keyframes flashRed { 0% { color: var(--red); } 100% { color: inherit; } }
+.flash-up { animation: flashGreen 0.5s ease; }
+.flash-down { animation: flashRed 0.5s ease; }
+
+/* Section divider */
+.section-divider { height: 1px; background: var(--border); margin: 8px 0; }
+
+/* Responsive */
+@media (min-width: 768px) {
+  body { max-width: 480px; margin: 0 auto; }
+  .modal-overlay { align-items: center; padding: 20px; }
+  .modal { border-radius: 20px; }
+}
+</style>
+<meta name="theme-color" content="#0a0e1a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="蛰龙令">
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%230a0e1a' width='192' height='192' rx='38'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle' fill='%23f59e0b'%3E%F0%9F%90%89%3C/text%3E%3C/svg%3E">
+</head>
+<body>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-brand">
+    <div class="header-icon">🐉</div>
+    <div>
+      <div class="header-title">蛰龙令</div>
+      <div class="header-sub">龙头狙击 · 空仓保命 · 纪律如军</div>
+    </div>
+  </div>
+  <div id="headerBadge" class="status-badge status-empty">空仓待命</div>
+</div>
+
+<!-- Capital Summary -->
+<div class="card">
+  <div class="card-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+    资金概览
+  </div>
+  <div class="card-body">
+    <div class="capital-grid">
+      <div class="capital-item">
+        <div class="capital-label">总资金</div>
+        <div class="capital-value" id="totalCapital">¥200,000</div>
+      </div>
+      <div class="capital-item">
+        <div class="capital-label">可用现金</div>
+        <div class="capital-value" id="cashValue">¥200,000</div>
+      </div>
+      <div class="capital-item">
+        <div class="capital-label">持仓市值</div>
+        <div class="capital-value" id="positionValue">¥0</div>
+      </div>
+      <div class="capital-item">
+        <div class="capital-label">累计盈亏</div>
+        <div class="capital-value" id="totalPnl">¥0</div>
+        <div class="capital-delta" id="totalPnlPct">0.00%</div>
+      </div>
+    </div>
+    <div style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);display:flex;justify-content:space-between;font-size:12px;color:var(--text3);">
+      <span>连续止损: <strong id="stopCount" style="color:var(--yellow);">0次</strong></span>
+      <span>持仓数量: <strong id="posCount">0只</strong></span>
+      <span>今日日期: <strong id="todayDate">--</strong></span>
+    </div>
+  </div>
+</div>
+
+<!-- Market Monitor -->
+<div class="card">
+  <div class="card-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+    大盘监控 · 20日均线
+    <span style="margin-left:auto;font-size:11px;color:var(--text3);" id="marketUpdateTime">--</span>
+  </div>
+  <div class="card-body">
+    <div class="market-grid">
+      <div class="market-item">
+        <div class="market-name">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline;vertical-align:middle;margin-right:2px"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"></polyline><polyline points="17 6 23 6 23 12"></polyline></svg>
+          上证指数
+        </div>
+        <div class="market-price" id="shIndex">--</div>
+        <div class="market-delta" id="shDelta">--</div>
+      </div>
+      <div class="market-item">
+        <div class="market-name">20日均线 MA20</div>
+        <div class="market-price" id="ma20" style="color:var(--text2);">--</div>
+        <div class="market-delta" id="maDelta">--</div>
+      </div>
+    </div>
+    <div class="ma-bar">
+      <div class="ma-track">
+        <div class="ma-fill down" id="maFill" style="width:50%"></div>
+      </div>
+      <div class="ma-info">
+        <span>0</span>
+        <span class="ma-status down" id="maStatus">数据加载中...</span>
+        <span>100%</span>
+      </div>
+    </div>
+    <div class="data-source">
+      <div class="dot" id="dataDot"></div>
+      <span id="dataSource">正在连接腾讯财经实时数据...</span>
+    </div>
+  </div>
+</div>
+
+<!-- Signal Panel -->
+<div class="card">
+  <div class="card-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+    交易信号
+  </div>
+  <div class="card-body">
+    <div class="signal-box wait" id="signalBox">
+      <div class="signal-title" id="signalTitle">⏳ 数据加载中...</div>
+      <div class="signal-text" id="signalText">正在连接A股实时数据，请稍候...</div>
+    </div>
+    <div class="checklist" id="checklist">
+      <div class="check-item"><div class="check-icon check-warn">⟳</div><span class="check-text">数据加载中...</span></div>
+    </div>
+  </div>
+</div>
+
+<!-- Sector Scanner -->
+<div class="card">
+  <div class="card-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"></path><path d="M2 17l10 5 10-5"></path><path d="M2 12l10 5 10-5"></path></svg>
+    热点扫描 · 板块涨停数
+    <span style="margin-left:auto;font-size:11px;color:var(--text3);" id="sectorUpdateTime">--</span>
+  </div>
+  <div class="card-body" style="padding:0;">
+    <div class="sector-list" id="sectorList" style="padding:0 16px;">
+      <div class="loading"><div class="spinner"></div>正在扫描涨停板块...</div>
+    </div>
+  </div>
+  <div class="card-body" style="padding-top:0;">
+    <div style="display:flex;gap:8px;">
+      <input id="sectorNameInput" placeholder="板块名称（如：半导体）" style="flex:1;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
+      <input id="sectorCountInput" type="number" placeholder="涨停数" style="width:80px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
+      <button class="btn btn-primary" style="flex:0 0 auto;width:auto;padding:10px 16px;" onclick="addSector()">添加</button>
+    </div>
+  </div>
+</div>
+
+<!-- Position Panel -->
+<div class="card">
+  <div class="card-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path></svg>
+    持仓管理 · 止盈止损
+    <span style="margin-left:auto;font-size:11px;color:var(--text3);" id="positionUpdateTime">--</span>
+  </div>
+  <div class="card-body" id="positionPanel">
+    <div class="position-empty">当前空仓<br>等待大盘站上20日均线 + S级热点</div>
+  </div>
+</div>
+
+<!-- Trade Log -->
+<div class="card">
+  <div class="card-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+    交易日志
+  </div>
+  <div class="card-body" style="padding:0;">
+    <div class="log-list" id="tradeLog" style="padding:0 16px;">
+      <div class="loading" style="padding:16px;"><div class="spinner"></div>加载交易记录...</div>
+    </div>
+  </div>
+</div>
+
+<!-- Action Buttons -->
+<div class="btn-group">
+  <button class="btn btn-primary" onclick="refreshAll()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg>
+    刷新数据
+  </button>
+  <button class="btn btn-warn" onclick="openBuyModal()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+    买入
+  </button>
+  <button class="btn btn-blue" onclick="openSettingsModal()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+    设置
+  </button>
+</div>
+
+<!-- Strategy Rules -->
+<div class="card">
+  <div class="card-header">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+    蛰龙令军令
+  </div>
+  <div class="card-body">
+    <div class="rule-item">
+      <div class="rule-title">🐍 蛰 · 空仓纪律</div>
+      <div class="rule-desc">大盘20日均线下方，如龙蛇冬眠，空仓等待。宁可错过，不可做错。</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-title">🐉 龙 · 龙头狙击</div>
+      <div class="rule-desc">只狙击板块绝对龙头。S级热点（≥8只涨停）20%仓位，A级热点（3-7只）15%仓位，最多同时2只。</div>
+    </div>
+    <div class="rule-item">
+      <div class="rule-title">📜 令 · 止盈止损</div>
+      <div class="rule-desc">-3%硬止损，最高价回落5%动态止盈，最长持仓8天强制离场，连续2次止损空仓3天。</div>
+    </div>
+  </div>
+</div>
+
+<!-- Buy Modal -->
+<div class="modal-overlay" id="buyModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>📥 手动买入</span>
+      <span class="modal-close" onclick="closeModal('buyModal')">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">股票代码</label>
+        <input class="form-input" id="buyCode" placeholder="如: sh600360 或 sz300721">
+      </div>
+      <div class="form-group">
+        <label class="form-label">股票名称</label>
+        <input class="form-input" id="buyName" placeholder="如: 华微电子">
+      </div>
+      <div class="form-group">
+        <label class="form-label">买入价格</label>
+        <input class="form-input" id="buyPrice" type="number" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">热点等级</label>
+        <select class="form-select" id="buyGrade">
+          <option value="S">🔥 S级热点 — 20%仓位</option>
+          <option value="A">⚡ A级热点 — 15%仓位</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">所属板块</label>
+        <input class="form-input" id="buySector" placeholder="如: 半导体">
+      </div>
+      <div class="btn-group" style="padding:0;">
+        <button class="btn" onclick="closeModal('buyModal')">取消</button>
+        <button class="btn btn-primary" onclick="executeBuy()">确认买入</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Sell Modal -->
+<div class="modal-overlay" id="sellModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>📤 手动卖出</span>
+      <span class="modal-close" onclick="closeModal('sellModal')">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">股票代码</label>
+        <input class="form-input" id="sellCode" readonly style="background:var(--bg3);">
+      </div>
+      <div class="form-group">
+        <label class="form-label">卖出价格</label>
+        <input class="form-input" id="sellPrice" type="number" step="0.01" placeholder="0.00">
+      </div>
+      <div class="form-group">
+        <label class="form-label">卖出原因</label>
+        <select class="form-select" id="sellReason">
+          <option value="硬止损">🔴 硬止损（-3%）</option>
+          <option value="动态止盈">🟡 动态止盈（回落5%）</option>
+          <option value="最长持仓">⏰ 最长持仓（8天）</option>
+          <option value="手动卖出">✋ 手动卖出</option>
+        </select>
+      </div>
+      <div class="btn-group" style="padding:0;">
+        <button class="btn" onclick="closeModal('sellModal')">取消</button>
+        <button class="btn btn-danger" onclick="executeSell()">确认卖出</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <span>⚙️ 策略设置</span>
+      <span class="modal-close" onclick="closeModal('settingsModal')">×</span>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label class="form-label">初始资金</label>
+        <input class="form-input" id="settingCapital" type="number" value="200000">
+      </div>
+      <div class="form-group">
+        <label class="form-label">硬止损比例 (%)</label>
+        <input class="form-input" id="settingStop" type="number" value="-3">
+      </div>
+      <div class="form-group">
+        <label class="form-label">动态止盈回落比例 (%)</label>
+        <input class="form-input" id="settingTrail" type="number" value="5">
+      </div>
+      <div class="form-group">
+        <label class="form-label">最长持仓天数</label>
+        <input class="form-input" id="settingHold" type="number" value="8">
+      </div>
+      <div class="form-group">
+        <label class="form-label">S级仓位比例 (%)</label>
+        <input class="form-input" id="settingSPos" type="number" value="20">
+      </div>
+      <div class="form-group">
+        <label class="form-label">A级仓位比例 (%)</label>
+        <input class="form-input" id="settingAPos" type="number" value="15">
+      </div>
+      <div class="form-group">
+        <label class="form-label">最大持仓数量</label>
+        <input class="form-input" id="settingMaxPos" type="number" value="2">
+      </div>
+      <div class="form-group">
+        <label class="form-label">连续止损空仓天数</label>
+        <input class="form-input" id="settingCooldown" type="number" value="3">
+      </div>
+      <div class="btn-group" style="padding:0;">
+        <button class="btn" onclick="closeModal('settingsModal')">取消</button>
+        <button class="btn btn-primary" onclick="saveSettings()">保存设置</button>
+      </div>
+      <div style="margin-top:16px;padding-top:16px;border-top:1px solid var(--border);">
+        <button class="btn btn-danger" style="width:100%;" onclick="resetAll()">⚠️ 重置所有数据</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ==================== 配置 ====================
+const DEFAULT_CONFIG = {
+  initialCapital: 200000,
+  hardStop: -0.03,
+  trailingStop: 0.05,
+  maxHoldDays: 8,
+  sPosition: 0.20,
+  aPosition: 0.15,
+  maxPositions: 2,
+  cooldownDays: 3,
+  refreshInterval: 30000,
+};
+
+let CONFIG = { ...DEFAULT_CONFIG };
+
+// ==================== 状态 ====================
+let state = {
+  capital: 200000,
+  cash: 200000,
+  positions: [],
+  trades: [],
+  stopCount: 0,
+  cooldownEnd: null,
+  market: { shIndex: 0, ma20: 0, aboveMa20: false, delta: 0 },
+  sectors: [],
+  lastUpdate: null,
+};
+
+let sellIdx = null;
+let refreshTimer = null;
+
+// ==================== 本地存储 ====================
+function saveState() {
+  try {
+    localStorage.setItem('zhelongling_state', JSON.stringify(state));
+    localStorage.setItem('zhelongling_config', JSON.stringify(CONFIG));
+  } catch (e) {
+    console.error('保存失败:', e);
+  }
+}
+
+function loadState() {
+  try {
+    const savedState = localStorage.getItem('zhelongling_state');
+    if (savedState) {
+      const parsed = JSON.parse(savedState);
+      state = { ...state, ...parsed };
+      if (state.cooldownEnd) state.cooldownEnd = new Date(state.cooldownEnd);
+      state.positions.forEach(p => {
+        p.entryDate = new Date(p.entryDate);
+        if (!p.maxPrice) p.maxPrice = p.buyPrice;
+      });
+      state.trades.forEach(t => {
+        t.date = new Date(t.date);
+      });
+    }
+    const savedConfig = localStorage.getItem('zhelongling_config');
+    if (savedConfig) {
+      CONFIG = { ...CONFIG, ...JSON.parse(savedConfig) };
+    }
+  } catch (e) {
+    console.error('加载失败:', e);
+  }
+}
+
+// ==================== Toast ====================
+function showToast(msg, type = 'normal', duration = 3000) {
+  const toast = document.getElementById('toast');
+  toast.textContent = msg;
+  toast.className = 'toast ' + (type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warn' ? 'warn' : '');
+  toast.classList.add('show');
+  setTimeout(() => toast.classList.remove('show'), duration);
+}
+
+// ==================== 数据获取 ====================
+// 腾讯财经API - 支持CORS，返回格式: v_sh000001="1~上证指数~..."
+async function fetchTencentQuote(codes) {
+  const url = `https://qt.gtimg.cn/q=${codes}`;
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    const text = await res.text();
+    return parseTencentData(text);
+  } catch (e) {
+    console.error('腾讯API失败:', e);
+    return null;
+  }
+}
+
+function parseTencentData(text) {
+  const result = {};
+  const lines = text.split(';');
+  lines.forEach(line => {
+    const match = line.match(/v_([a-z]+\d+)="([^"]*)"/);
+    if (match && match[2]) {
+      const code = match[1];
+      const parts = match[2].split('~');
+      if (parts.length > 30) {
+        result[code] = {
+          name: parts[1],
+          code: parts[2],
+          price: parseFloat(parts[3]) || 0,
+          prevClose: parseFloat(parts[4]) || 0,
+          open: parseFloat(parts[5]) || 0,
+          high: parseFloat(parts[6]) || 0,
+          low: parseFloat(parts[7]) || 0,
+          volume: parseFloat(parts[8]) || 0,
+          delta: parseFloat(parts[9]) || 0,
+          deltaPct: parseFloat(parts[10]) || 0,
+          marketCap: parseFloat(parts[20]) || 0,
+          floatCap: parseFloat(parts[21]) || 0,
+        };
+      }
+    }
+  });
+  return result;
+}
+
+// 获取上证指数K线（20日均线）
+async function fetchSHKline() {
+  const url = 'https://web.ifzq.gtimg.cn/appstock/app/fqkline/get?param=sh000001,day,,,100,qfq';
+  try {
+    const res = await fetch(url, { mode: 'cors' });
+    const data = await res.json();
+    if (data.data && data.data.sh000001 && data.data.sh000001.day) {
+      const klines = data.data.sh000001.day;
+      const closes = klines.slice(-20).map(d => parseFloat(d[2]));
+      const ma20 = closes.reduce((a, b) => a + b, 0) / closes.length;
+      const today = closes[closes.length - 1];
+      return { ma20, today, klines };
+    }
+  } catch (e) {
+    console.error('K线获取失败:', e);
+  }
+  return null;
+}
+
+// 获取持仓股票实时价格
+async function refreshPositionPrices() {
+  if (state.positions.length === 0) return;
+  const codes = state.positions.map(p => p.code).join(',');
+  const quote = await fetchTencentQuote(codes);
+  if (!quote) return;
+
+  let hasUpdate = false;
+  state.positions.forEach(pos => {
+    const q = quote[pos.code];
+    if (q && q.price > 0) {
+      const oldPrice = pos.currentPrice;
+      pos.currentPrice = q.price;
+      if (q.price > pos.maxPrice) pos.maxPrice = q.price;
+      if (Math.abs(q.price - oldPrice) > 0.01) hasUpdate = true;
+    }
+  });
+
+  if (hasUpdate) {
+    renderPositions();
+    renderCapital();
+    checkAlerts();
+  }
+}
+
+// ==================== 策略逻辑 ====================
+function canTrade() {
+  const now = new Date();
+
+  if (state.cooldownEnd && now <= state.cooldownEnd) {
+    const daysLeft = Math.ceil((state.cooldownEnd - now) / 86400000);
+    return { can: false, reason: `空仓保护期（剩余${daysLeft}天）` };
+  }
+
+  if (!state.market.aboveMa20) {
+    return { can: false, reason: `大盘20日均线下方（${state.market.shIndex.toFixed(2)} < ${state.market.ma20.toFixed(2)}）` };
+  }
+
+  if (state.stopCount >= 2) {
+    return { can: false, reason: `连续${state.stopCount}次止损保护` };
+  }
+
+  if (state.positions.length >= CONFIG.maxPositions) {
+    return { can: false, reason: `持仓已满（${state.positions.length}只）` };
+  }
+
+  return { can: true, reason: 'OK' };
+}
+
+function checkAlerts() {
+  const alerts = [];
+  const now = new Date();
+
+  state.positions.forEach((pos, idx) => {
+    const holdDays = Math.floor((now - pos.entryDate) / 86400000);
+    const gain = (pos.currentPrice - pos.buyPrice) / pos.buyPrice;
+    const maxGain = (pos.maxPrice - pos.buyPrice) / pos.buyPrice;
+
+    if (gain <= CONFIG.hardStop) {
+      alerts.push({ idx, type: 'stop', msg: `🔴 ${pos.name}(${pos.code}) 触发硬止损！亏损${(gain*100).toFixed(2)}%` });
+    } else if (maxGain > 0 && (maxGain - gain) >= CONFIG.trailingStop) {
+      alerts.push({ idx, type: 'trail', msg: `🟡 ${pos.name}(${pos.code}) 触发动态止盈！从最高${(maxGain*100).toFixed(2)}%回落至${(gain*100).toFixed(2)}%` });
+    } else if (holdDays >= CONFIG.maxHoldDays) {
+      alerts.push({ idx, type: 'hold', msg: `⏰ ${pos.name}(${pos.code}) 已持仓${holdDays}天，达到最长持仓期限` });
+    }
+  });
+
+  return alerts;
+}
+
+// ==================== UI渲染 ====================
+function renderHeader() {
+  const badge = document.getElementById('headerBadge');
+  if (state.cooldownEnd && new Date() <= state.cooldownEnd) {
+    badge.className = 'status-badge status-cooldown';
+    badge.textContent = '空仓保护';
+  } else if (state.positions.length > 0) {
+    badge.className = 'status-badge status-hold';
+    badge.textContent = '持仓中 ' + state.positions.length + '只';
+  } else {
+    badge.className = 'status-badge status-empty';
+    badge.textContent = '空仓待命';
+  }
+}
+
+function renderCapital() {
+  const posValue = state.positions.reduce((sum, p) => sum + p.shares * p.currentPrice, 0);
+  const total = state.cash + posValue;
+  const pnl = total - CONFIG.initialCapital;
+  const pnlPct = (pnl / CONFIG.initialCapital * 100);
+
+  document.getElementById('totalCapital').textContent = '¥' + total.toLocaleString('en-US', {maximumFractionDigits: 0});
+  document.getElementById('cashValue').textContent = '¥' + state.cash.toLocaleString('en-US', {maximumFractionDigits: 0});
+  document.getElementById('positionValue').textContent = '¥' + posValue.toLocaleString('en-US', {maximumFractionDigits: 0});
+
+  const pnlEl = document.getElementById('totalPnl');
+  pnlEl.textContent = (pnl >= 0 ? '+' : '') + '¥' + Math.abs(pnl).toLocaleString('en-US', {maximumFractionDigits: 0});
+  pnlEl.className = 'capital-value ' + (pnl >= 0 ? 'up' : 'down');
+
+  const pnlPctEl = document.getElementById('totalPnlPct');
+  pnlPctEl.textContent = (pnlPct >= 0 ? '+' : '') + pnlPct.toFixed(2) + '%';
+  pnlPctEl.className = 'capital-delta ' + (pnlPct >= 0 ? 'up' : 'down');
+
+  document.getElementById('stopCount').textContent = state.stopCount + '次';
+  document.getElementById('posCount').textContent = state.positions.length + '只';
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('zh-CN');
+}
+
+function renderMarket() {
+  const m = state.market;
+  const shEl = document.getElementById('shIndex');
+  shEl.textContent = m.shIndex ? m.shIndex.toFixed(2) : '--';
+  shEl.className = 'market-price ' + (m.delta >= 0 ? 'up' : 'down');
+
+  const deltaEl = document.getElementById('shDelta');
+  deltaEl.textContent = m.delta ? (m.delta >= 0 ? '+' : '') + m.delta.toFixed(2) + '%' : '--';
+  deltaEl.className = 'market-delta ' + (m.delta >= 0 ? 'up' : 'down');
+
+  document.getElementById('ma20').textContent = m.ma20 ? m.ma20.toFixed(2) : '--';
+
+  const deviation = m.ma20 ? ((m.shIndex / m.ma20 - 1) * 100) : 0;
+  const maDeltaEl = document.getElementById('maDelta');
+  maDeltaEl.textContent = m.ma20 ? '偏离 ' + (deviation >= 0 ? '+' : '') + deviation.toFixed(2) + '%' : '--';
+  maDeltaEl.className = 'market-delta ' + (deviation >= 0 ? 'up' : 'down');
+
+  const fill = document.getElementById('maFill');
+  const status = document.getElementById('maStatus');
+  if (m.aboveMa20) {
+    fill.className = 'ma-fill up';
+    fill.style.width = '65%';
+    status.className = 'ma-status up';
+    status.textContent = '✅ 20日均线上方 — 可操作';
+  } else {
+    fill.className = 'ma-fill down';
+    fill.style.width = '35%';
+    status.className = 'ma-status down';
+    status.textContent = '❌ 20日均线下方 — 空仓';
+  }
+
+  document.getElementById('marketUpdateTime').textContent = state.lastUpdate ? new Date(state.lastUpdate).toLocaleTimeString('zh-CN') : '--';
+}
+
+function renderSignal() {
+  const tradeCheck = canTrade();
+  const hasS = state.sectors.some(s => s.grade === 'S');
+  const hasA = state.sectors.some(s => s.grade === 'A');
+  const box = document.getElementById('signalBox');
+  const title = document.getElementById('signalTitle');
+  const text = document.getElementById('signalText');
+
+  if (!tradeCheck.can) {
+    box.className = 'signal-box wait';
+    title.textContent = '🛡️ 空仓待命';
+    text.innerHTML = tradeCheck.reason + '<br>军令：无论出现什么热点，绝不买入';
+  } else if (state.cooldownEnd && new Date() <= state.cooldownEnd) {
+    const days = Math.ceil((state.cooldownEnd - new Date()) / 86400000);
+    box.className = 'signal-box cooldown';
+    title.textContent = '⏳ 空仓保护期';
+    text.innerHTML = `连续${state.stopCount}次止损触发空仓保护<br>剩余 ${days} 天不可交易<br>龙蛇之蛰，以存身也`;
+  } else if (hasS) {
+    const s = state.sectors.find(x => x.grade === 'S');
+    box.className = 'signal-box buy';
+    title.textContent = '🔥 S级热点 — 准备买入';
+    text.innerHTML = `【${s.name}】板块 ${s.count} 只涨停<br>龙头候选：${s.leader || s.stocks[0]}<br>仓位：${(CONFIG.sPosition*100).toFixed(0)}% · 次日高开+3%~+5%买入`;
+  } else if (hasA) {
+    const a = state.sectors.find(x => x.grade === 'A');
+    box.className = 'signal-box buy';
+    title.textContent = '⚡ A级热点 — 谨慎买入';
+    text.innerHTML = `【${a.name}】板块 ${a.count} 只涨停<br>龙头候选：${a.leader || a.stocks[0]}<br>仓位：${(CONFIG.aPosition*100).toFixed(0)}% · 次日高开+3%~+5%买入`;
+  } else {
+    box.className = 'signal-box wait';
+    title.textContent = '⏳ 等待热点';
+    text.innerHTML = '大盘20日均线上方，但无批量涨停热点<br>无S级（≥8只）无A级（3-7只）<br>空仓等待，不追杂毛';
+  }
+
+  const checklist = document.getElementById('checklist');
+  let html = '';
+  const above = state.market.aboveMa20;
+  html += `<div class="check-item"><div class="check-icon ${above ? 'check-pass' : 'check-fail'}">${above ? '✓' : '✕'}</div><div class="check-text">大盘20日均线上方<div class="check-detail">${state.market.shIndex.toFixed(0)} vs ${state.market.ma20.toFixed(0)}</div></div></div>`;
+  html += `<div class="check-item"><div class="check-icon ${hasS ? 'check-pass' : 'check-fail'}">${hasS ? '✓' : '✕'}</div><div class="check-text">存在S级热点（≥8只涨停）${hasS ? '<div class="check-detail">发现S级热点</div>' : ''}</div></div>`;
+  html += `<div class="check-item"><div class="check-icon ${hasA ? 'check-pass' : 'check-warn'}">${hasA ? '✓' : '−'}</div><div class="check-text">存在A级热点（3-7只涨停）${hasA ? '<div class="check-detail">发现A级热点</div>' : ''}</div></div>`;
+  const stopOk = state.stopCount < 2;
+  html += `<div class="check-item"><div class="check-icon ${stopOk ? 'check-pass' : 'check-fail'}">${stopOk ? '✓' : '✕'}</div><div class="check-text">连续止损 < 2次<div class="check-detail">当前${state.stopCount}次</div></div></div>`;
+  const posOk = state.positions.length < CONFIG.maxPositions;
+  html += `<div class="check-item"><div class="check-icon ${posOk ? 'check-pass' : 'check-fail'}">${posOk ? '✓' : '✕'}</div><div class="check-text">持仓未满${CONFIG.maxPositions}只<div class="check-detail">当前${state.positions.length}只</div></div></div>`;
+  checklist.innerHTML = html;
+}
+
+function renderSectors() {
+  const list = document.getElementById('sectorList');
+  if (state.sectors.length === 0) {
+    list.innerHTML = '<div class="loading" style="padding:16px;"><div class="spinner"></div>暂无板块数据，请手动添加或等待自动扫描</div>';
+    return;
+  }
+
+  let html = '';
+  state.sectors.forEach((s, idx) => {
+    const gradeClass = s.grade === 'S' ? 'grade-s' : (s.grade === 'A' ? 'grade-a' : 'grade-none');
+    const gradeText = s.grade === 'S' ? 'S级' : (s.grade === 'A' ? 'A级' : '—');
+    html += `<div class="sector-item">
+      <div class="sector-info">
+        <div class="sector-name">${s.name}</div>
+        <div class="sector-stocks">${s.stocks.slice(0, 3).join(' ')}${s.stocks.length > 3 ? '...' : ''}</div>
+      </div>
+      <div class="sector-count">${s.count}只</div>
+      <div class="sector-grade ${gradeClass}">${gradeText}</div>
+      <button onclick="removeSector(${idx})" style="margin-left:8px;padding:2px 8px;background:var(--red-bg);color:var(--red);border:none;border-radius:4px;font-size:10px;cursor:pointer;">删除</button>
+    </div>`;
+  });
+  list.innerHTML = html;
+  document.getElementById('sectorUpdateTime').textContent = state.lastUpdate ? new Date(state.lastUpdate).toLocaleTimeString('zh-CN') : '--';
+}
+
+function renderPositions() {
+  const panel = document.getElementById('positionPanel');
+  if (state.positions.length === 0) {
+    panel.innerHTML = '<div class="position-empty">当前空仓<br>等待大盘站上20日均线 + S级热点</div>';
+    document.getElementById('positionUpdateTime').textContent = '--';
+    return;
+  }
+
+  let html = '';
+  state.positions.forEach((pos, idx) => {
+    const gain = (pos.currentPrice - pos.buyPrice) / pos.buyPrice;
+    const maxGain = (pos.maxPrice - pos.buyPrice) / pos.buyPrice;
+    const holdDays = Math.floor((new Date() - pos.entryDate) / 86400000);
+    const stopPrice = pos.buyPrice * (1 + CONFIG.hardStop);
+    const trailPrice = pos.maxPrice * (1 - CONFIG.trailingStop);
+    const isStop = pos.currentPrice <= stopPrice;
+    const isTrail = maxGain > 0 && pos.currentPrice <= trailPrice;
+    const isHold = holdDays >= CONFIG.maxHoldDays;
+
+    html += `<div class="position-item">
+      <div class="position-header">
+        <div><span class="position-code">${pos.code}</span><span class="position-name">${pos.name}</span></div>
+        <span class="position-pnl ${gain >= 0 ? 'up' : 'down'}">${gain >= 0 ? '+' : ''}${(gain*100).toFixed(2)}%</span>
+      </div>
+      <div class="position-detail">
+        <span>买入 <strong>¥${pos.buyPrice.toFixed(2)}</strong></span>
+        <span>现价 <strong>¥${pos.currentPrice.toFixed(2)}</strong></span>
+        <span>最高 <strong>¥${pos.maxPrice.toFixed(2)}</strong></span>
+      </div>
+      <div class="position-bar"><div class="position-bar-fill ${gain >= 0 ? 'up' : 'down'}" style="width:${Math.min(Math.abs(gain)*200, 100)}%"></div></div>
+      <div class="position-stop">
+        <span>硬止损线 <span class="stop-line">¥${stopPrice.toFixed(2)}</span></span>
+        <span>动态止盈 <span class="trail-line">¥${trailPrice.toFixed(2)}</span></span>
+        <span>持仓${holdDays}天</span>
+      </div>`;
+
+    if (isStop) html += `<div class="position-alert alert-stop">🔴 已触发硬止损！建议立即卖出</div>`;
+    else if (isTrail) html += `<div class="position-alert alert-trail">🟡 已触发动态止盈！建议卖出</div>`;
+    else if (isHold) html += `<div class="position-alert alert-hold">⏰ 已持仓${holdDays}天，达到最长持仓期限</div>`;
+
+    html += `<div style="margin-top:10px;display:flex;gap:8px;">
+      <input id="sellPrice${idx}" type="number" step="0.01" placeholder="卖出价格" style="flex:1;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
+      <select id="sellReason${idx}" style="width:100px;padding:10px 12px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:13px;">
+        <option>硬止损</option>
+        <option>动态止盈</option>
+        <option>最长持仓</option>
+        <option>手动卖出</option>
+      </select>
+      <button class="btn btn-danger" style="flex:0 0 auto;width:80px;padding:10px;" onclick="executeSellByIdx(${idx})">卖出</button>
+    </div></div>`;
+  });
+  panel.innerHTML = html;
+  document.getElementById('positionUpdateTime').textContent = new Date().toLocaleTimeString('zh-CN');
+}
+
+function renderTrades() {
+  const log = document.getElementById('tradeLog');
+  if (state.trades.length === 0) {
+    log.innerHTML = '<div class="loading" style="padding:16px;">暂无交易记录</div>';
+    return;
+  }
+
+  let html = '';
+  const sorted = [...state.trades].sort((a, b) => b.date - a.date);
+  sorted.forEach(t => {
+    const dateStr = t.date.toLocaleDateString('zh-CN', {month: '2-digit', day: '2-digit'});
+    const actionClass = t.action === 'buy' ? 'buy' : 'sell';
+    const actionText = t.action === 'buy' ? '买入' : '卖出';
+    const pnlClass = t.pnl > 0 ? 'up' : (t.pnl < 0 ? 'down' : '');
+    const pnlText = t.pnl !== undefined ? (t.pnl > 0 ? '+' : '') + (t.pnl*100).toFixed(2) + '%' : '—';
+
+    html += `<div class="log-item">
+      <div class="log-date">${dateStr}</div>
+      <div class="log-action ${actionClass}">${actionText}</div>
+      <div class="log-stock">${t.code} ${t.name}</div>
+      <div class="log-reason">${t.reason || ''}</div>
+      <div class="log-pnl ${pnlClass}">${pnlText}</div>
+    </div>`;
+  });
+  log.innerHTML = html;
+}
+
+function renderAll() {
+  renderHeader();
+  renderCapital();
+  renderMarket();
+  renderSignal();
+  renderSectors();
+  renderPositions();
+  renderTrades();
+}
+
+// ==================== 数据刷新 ====================
+async function refreshMarketData() {
+  const quote = await fetchTencentQuote('sh000001');
+  if (quote && quote.sh000001) {
+    const q = quote.sh000001;
+    state.market.shIndex = q.price;
+    state.market.delta = q.deltaPct;
+
+    document.getElementById('dataDot').className = 'dot';
+    document.getElementById('dataSource').textContent = '腾讯财经实时数据已连接';
+  } else {
+    document.getElementById('dataDot').className = 'dot offline';
+    document.getElementById('dataSource').textContent = '数据连接失败，请手动输入';
+  }
+
+  const kline = await fetchSHKline();
+  if (kline) {
+    state.market.ma20 = kline.ma20;
+    state.market.aboveMa20 = kline.today > kline.ma20;
+  }
+
+  renderMarket();
+  renderSignal();
+}
+
+async function refreshAll() {
+  showToast('正在刷新数据...', 'normal', 2000);
+  await refreshMarketData();
+  await refreshPositionPrices();
+  renderAll();
+
+  const alerts = checkAlerts();
+  if (alerts.length > 0) {
+    alerts.forEach(a => showToast(a.msg, 'warn', 5000));
+  }
+
+  saveState();
+  showToast('数据刷新完成', 'success', 2000);
+}
+
+// ==================== 交易操作 ====================
+function openBuyModal() {
+  document.getElementById('buyModal').classList.add('active');
+}
+
+function openSellModal(idx) {
+  sellIdx = idx;
+  const pos = state.positions[idx];
+  document.getElementById('sellCode').value = pos.code;
+  document.getElementById('sellPrice').value = pos.currentPrice.toFixed(2);
+  document.getElementById('sellModal').classList.add('active');
+}
+
+function openSettingsModal() {
+  document.getElementById('settingsModal').classList.add('active');
+}
+
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+function executeBuy() {
+  const code = document.getElementById('buyCode').value.trim();
+  const name = document.getElementById('buyName').value.trim();
+  const price = parseFloat(document.getElementById('buyPrice').value);
+  const grade = document.getElementById('buyGrade').value;
+  const sector = document.getElementById('buySector').value.trim();
+
+  if (!code || !name || !price || price <= 0) {
+    showToast('请填写完整信息', 'error');
+    return;
+  }
+
+  const tradeCheck = canTrade();
+  if (!tradeCheck.can) {
+    showToast('当前不可买入：' + tradeCheck.reason, 'error');
+    return;
+  }
+
+  const positionPct = grade === 'S' ? CONFIG.sPosition : CONFIG.aPosition;
+  const investAmount = state.cash * positionPct;
+  const shares = Math.floor(investAmount / price / 100) * 100;
+
+  if (shares < 100) {
+    showToast('资金不足，无法买入', 'error');
+    return;
+  }
+
+  const actualInvest = shares * price;
+  state.cash -= actualInvest;
+
+  state.positions.push({
+    code: code.toLowerCase(),
+    name,
+    buyPrice: price,
+    currentPrice: price,
+    maxPrice: price,
+    shares,
+    grade,
+    sector,
+    entryDate: new Date(),
+  });
+
+  state.trades.push({
+    date: new Date(),
+    action: 'buy',
+    code: code.toLowerCase(),
+    name,
+    price,
+    shares,
+    grade,
+    sector,
+    reason: `${sector}${grade}级热点龙头`,
+  });
+
+  saveState();
+  renderAll();
+  closeModal('buyModal');
+  showToast(`买入成功：${name} ${shares}股 @ ¥${price}`, 'success');
+
+  document.getElementById('buyCode').value = '';
+  document.getElementById('buyName').value = '';
+  document.getElementById('buyPrice').value = '';
+  document.getElementById('buySector').value = '';
+}
+
+function executeSellByIdx(idx) {
+  const price = parseFloat(document.getElementById('sellPrice' + idx).value);
+  const reason = document.getElementById('sellReason' + idx).value;
+
+  if (!price || price <= 0) {
+    showToast('请输入卖出价格', 'error');
+    return;
+  }
+
+  const pos = state.positions[idx];
+  const sellValue = pos.shares * price * 0.9995;
+  const gain = (price - pos.buyPrice) / pos.buyPrice;
+  state.cash += sellValue;
+
+  state.trades.push({
+    date: new Date(),
+    action: 'sell',
+    code: pos.code,
+    name: pos.name,
+    price,
+    shares: pos.shares,
+    reason: reason + (gain > 0 ? ` +${(gain*100).toFixed(2)}%` : ` ${(gain*100).toFixed(2)}%`),
+    pnl: gain,
+  });
+
+  if (reason === '硬止损' || gain <= CONFIG.hardStop) {
+    state.stopCount++;
+    if (state.stopCount >= 2) {
+      state.cooldownEnd = new Date(Date.now() + CONFIG.cooldownDays * 86400000);
+      showToast(`触发空仓保护！未来${CONFIG.cooldownDays}天禁止交易`, 'error', 5000);
+    }
+  } else {
+    state.stopCount = 0;
+  }
+
+  state.positions.splice(idx, 1);
+
+  saveState();
+  renderAll();
+  showToast(`卖出成功：${pos.name} @ ¥${price} 盈亏${(gain*100).toFixed(2)}%`, gain >= 0 ? 'success' : 'error');
+}
+
+function executeSell() {
+  if (sellIdx === null) return;
+
+  const price = parseFloat(document.getElementById('sellPrice').value);
+  const reason = document.getElementById('sellReason').value;
+  const pos = state.positions[sellIdx];
+
+  if (!price || price <= 0) {
+    showToast('请输入卖出价格', 'error');
+    return;
+  }
+
+  const sellValue = pos.shares * price * 0.9995;
+  const gain = (price - pos.buyPrice) / pos.buyPrice;
+  state.cash += sellValue;
+
+  state.trades.push({
+    date: new Date(),
+    action: 'sell',
+    code: pos.code,
+    name: pos.name,
+    price,
+    shares: pos.shares,
+    reason: reason + (gain > 0 ? ` +${(gain*100).toFixed(2)}%` : ` ${(gain*100).toFixed(2)}%`),
+    pnl: gain,
+  });
+
+  if (reason === '硬止损' || gain <= CONFIG.hardStop) {
+    state.stopCount++;
+    if (state.stopCount >= 2) {
+      state.cooldownEnd = new Date(Date.now() + CONFIG.cooldownDays * 86400000);
+      showToast(`触发空仓保护！未来${CONFIG.cooldownDays}天禁止交易`, 'error', 5000);
+    }
+  } else {
+    state.stopCount = 0;
+  }
+
+  state.positions.splice(sellIdx, 1);
+  sellIdx = null;
+
+  saveState();
+  renderAll();
+  closeModal('sellModal');
+  showToast(`卖出成功：${pos.name} @ ¥${price} 盈亏${(gain*100).toFixed(2)}%`, gain >= 0 ? 'success' : 'error');
+}
+
+// ==================== 板块管理 ====================
+function addSector() {
+  const name = document.getElementById('sectorNameInput').value.trim();
+  const count = parseInt(document.getElementById('sectorCountInput').value) || 0;
+
+  if (!name || count < 1) {
+    showToast('请输入板块名称和涨停数', 'error');
+    return;
+  }
+
+  const grade = count >= 8 ? 'S' : (count >= 3 ? 'A' : 'none');
+  state.sectors.push({
+    name,
+    count,
+    grade,
+    stocks: [],
+    leader: '',
+  });
+
+  document.getElementById('sectorNameInput').value = '';
+  document.getElementById('sectorCountInput').value = '';
+
+  saveState();
+  renderSectors();
+  renderSignal();
+  showToast(`已添加板块：${name} ${count}只${grade !== 'none' ? ' ' + grade + '级' : ''}`, 'success');
+}
+
+function removeSector(idx) {
+  state.sectors.splice(idx, 1);
+  saveState();
+  renderSectors();
+  renderSignal();
+}
+
+// ==================== 设置 ====================
+function saveSettings() {
+  CONFIG.initialCapital = parseFloat(document.getElementById('settingCapital').value) || 200000;
+  CONFIG.hardStop = parseFloat(document.getElementById('settingStop').value) / 100 || -0.03;
+  CONFIG.trailingStop = parseFloat(document.getElementById('settingTrail').value) / 100 || 0.05;
+  CONFIG.maxHoldDays = parseInt(document.getElementById('settingHold').value) || 8;
+  CONFIG.sPosition = parseFloat(document.getElementById('settingSPos').value) / 100 || 0.20;
+  CONFIG.aPosition = parseFloat(document.getElementById('settingAPos').value) / 100 || 0.15;
+  CONFIG.maxPositions = parseInt(document.getElementById('settingMaxPos').value) || 2;
+  CONFIG.cooldownDays = parseInt(document.getElementById('settingCooldown').value) || 3;
+
+  saveState();
+  closeModal('settingsModal');
+  showToast('设置已保存', 'success');
+  renderAll();
+}
+
+function resetAll() {
+  if (!confirm('确定要重置所有数据吗？这将清空所有持仓和交易记录！')) return;
+  state = {
+    capital: CONFIG.initialCapital,
+    cash: CONFIG.initialCapital,
+    positions: [],
+    trades: [],
+    stopCount: 0,
+    cooldownEnd: null,
+    market: { shIndex: 0, ma20: 0, aboveMa20: false, delta: 0 },
+    sectors: [],
+    lastUpdate: null,
+  };
+  saveState();
+  renderAll();
+  closeModal('settingsModal');
+  showToast('所有数据已重置', 'success');
+}
+
+// ==================== 初始化 ====================
+function init() {
+  loadState();
+  renderAll();
+  refreshAll();
+
+  // 定时刷新（交易时间）
+  refreshTimer = setInterval(() => {
+    const now = new Date();
+    const hour = now.getHours();
+    const min = now.getMinutes();
+    const day = now.getDay();
+
+    // 周一到周五，9:30-11:30, 13:00-15:00
+    if (day >= 1 && day <= 5) {
+      if ((hour === 9 && min >= 30) || hour === 10 || (hour === 11 && min <= 30) ||
+          (hour === 13) || hour === 14 || (hour === 15 && min <= 0)) {
+        refreshAll();
+      }
+    }
+  }, CONFIG.refreshInterval);
+
+  // 页面可见时刷新
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden) refreshAll();
+  });
+}
+
+// 启动
+init();
+</script>
+
+<script>
+// PWA: 动态创建Manifest
+const manifest = {
+  name: "蛰龙令 · 龙头狙击",
+  short_name: "蛰龙令",
+  start_url: ".",
+  display: "standalone",
+  background_color: "#0a0e1a",
+  theme_color: "#0a0e1a",
+  orientation: "portrait",
+  icons: [
+    { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'%3E%3Crect fill='%230a0e1a' width='192' height='192' rx='38'/%3E%3Ctext x='96' y='130' font-size='100' text-anchor='middle' fill='%23f59e0b'%3E%F0%9F%90%89%3C/text%3E%3C/svg%3E", sizes: "192x192", type: "image/svg+xml" },
+    { src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'%3E%3Crect fill='%230a0e1a' width='512' height='512' rx='102'/%3E%3Ctext x='256' y='340' font-size='260' text-anchor='middle' fill='%23f59e0b'%3E%F0%9F%90%89%3C/text%3E%3C/svg%3E", sizes: "512x512", type: "image/svg+xml" }
+  ]
+};
+const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+const manifestURL = URL.createObjectURL(manifestBlob);
+const link = document.createElement('link');
+link.rel = 'manifest';
+link.href = manifestURL;
+document.head.appendChild(link);
+
+// PWA: 注册Service Worker（离线缓存）
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    const CACHE_NAME = 'zhelongling-v1';
+    const urlsToCache = ['/', '/index.html'];
+    self.addEventListener('install', event => {
+      event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache)));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate', event => {
+      event.waitUntil(self.clients.claim());
+    });
+    self.addEventListener('fetch', event => {
+      event.respondWith(caches.match(event.request).then(response => {
+        if (response) return response;
+        return fetch(event.request).catch(() => {
+          return new Response('离线模式 - 数据无法更新', {status: 503, statusText: 'Service Unavailable'});
+        });
+      }));
+    });
+  `;
+  const swBlob = new Blob([swCode], {type: 'application/javascript'});
+  const swURL = URL.createObjectURL(swBlob);
+  navigator.serviceWorker.register(swURL).catch(err => console.log('SW注册失败:', err));
+}
+
+// PWA: 检测是否已安装
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  window.deferredPrompt = e;
+  console.log('PWA可安装');
+});
+</script>
+</body>
+</html>
